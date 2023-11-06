@@ -17,13 +17,13 @@
 
  	<!-- CSS
    ================================================== -->
-   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/css/base.css">
-   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/css/main.css">
-   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/css/vendor.css">
+   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/core/maintenance-mode/css/base.css">
+   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/core/maintenance-mode/css/main.css">
+   <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/core/maintenance-mode/css/vendor.css">
 
    <!-- script
    ================================================== -->
-	<script src="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/js/modernizr.js"></script>
+	<script src="<?= get_template_directory_uri(); ?>/core/maintenance-mode/js/modernizr.js"></script>
 
    <!-- favicons
 	================================================== -->
@@ -113,9 +113,9 @@
 
    <!-- Java Script
    ================================================== -->
-   <script src="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/js/jquery-2.1.3.min.js"></script>
-   <script src="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/js/plugins.js"></script>
-   <script src="<?= get_template_directory_uri(); ?>/assets/maintenance-mode/js/main.js"></script>
+   <script src="<?= get_template_directory_uri(); ?>/core/maintenance-mode/js/jquery-2.1.3.min.js"></script>
+   <script src="<?= get_template_directory_uri(); ?>/core/maintenance-mode/js/plugins.js"></script>
+   <script src="<?= get_template_directory_uri(); ?>/core/maintenance-mode/js/main.js"></script>
 
 </body>
 
