@@ -17,7 +17,13 @@ if (!defined('ATHEME'))
     define('ATHEME', get_template());
 
 if (!defined('ATHEME_ELEMENTOR_ENABLED'))
-    define('ATHEME_ELEMENTOR_ENABLED', true);
+    define('ATHEME_ELEMENTOR_ENABLED', checked(1, get_option('elementor_enabled', ''), false));
+
+if (!defined('ATHEME_DISABLE_GUTENBERG'))
+    define('ATHEME_DISABLE_GUTENBERG', checked(1, get_option('disable_gutenberg', ''), false));
+
+if (!defined('ATHEME_MAINTENANCE'))
+    define('ATHEME_MAINTENANCE', checked(1, get_option('maintenance_mode', ''), false));
 
 if (!defined('ATHEME_THEME_DIR'))
     define('ATHEME_THEME_DIR', get_template_directory());
@@ -26,10 +32,10 @@ if (!defined('ATHEME_THEME_URL'))
     define('ATHEME_THEME_URL', get_template_directory_uri());
 
 if (!defined('ATHEME_THEME_URL_POST_TYPES'))
-    define('ATHEME_THEME_URL', get_template_directory_uri() . '/core/elixir/post-types');
+    define('ATHEME_THEME_URL_POST_TYPES', get_template_directory_uri() . '/core/elixir/post-types');
 
 if (!defined('ATHEME_THEME_URL_TAXONOMY'))
-    define('ATHEME_THEME_URL', get_template_directory_uri() . '/core/elixir/taxonomy');
+    define('ATHEME_THEME_URL_TAXONOMY', get_template_directory_uri() . '/core/elixir/taxonomy');
 
 if (!defined('ATHEME_THEME_URL_JS'))
     define('ATHEME_THEME_URL_JS', get_template_directory_uri() . '/core/assets/js');
@@ -38,7 +44,7 @@ if (!defined('ATHEME_THEME_URL_CSS'))
     define('ATHEME_THEME_URL_CSS', get_template_directory_uri() . '/core/assets/css');
 
 if (!defined('ATHEME_THEME_URL_IMG'))
-    define('ATHEME_THEME_URL_CSS', get_template_directory_uri() . '/core/assets/image');
+    define('ATHEME_THEME_URL_IMG', get_template_directory_uri() . '/core/assets/image');
 
 if (!defined('ATHEME_THEME_START_FUNC'))
     define('ATHEME_THEME_START_FUNC', get_template_directory_uri() . '/core/elixir/functions.php');
@@ -56,9 +62,19 @@ if (ATHEME_ELEMENTOR_ENABLED) {
     require_once(ATHEME_THEME_DIR . '/core/elementor/widgets.php');
 }
 
+if (!defined('ATHEME_THEME_ADMIN'))
+    define('ATHEME_THEME_ADMIN', get_template_directory() . '/core/admin/');
+
+if (ATHEME_THEME_ADMIN) {
+    require_once(ATHEME_THEME_ADMIN . '/admin.php');
+    function enqueue_admin_style()
+    {
+        wp_enqueue_style('admin-style', ATHEME_THEME_ADMIN . '/css/admin.css');
+    }
+    add_action('admin_enqueue_scripts', 'enqueue_admin_style');
+}
 
 require_once(ATHEME_THEME_DIR . '/core/must-install-plugins.php');
-require_once(ATHEME_THEME_DIR . '/core/elixir/widgets.php');
 
 $post_types = glob(ATHEME_THEME_URL_POST_TYPES . '*.php');
 $taxonomy = glob(ATHEME_THEME_URL_TAXONOMY . '*.php');
@@ -70,7 +86,8 @@ foreach (array_combine($post_types, $taxonomy, ) as $file) {
     }
 }
 
-function enqueue_files_from_folder() {
+function enqueue_files_from_folder()
+{
 
     // Enqueue all CSS files
     $css_files = glob(ATHEME_THEME_URL_CSS . '/*.css');
@@ -95,7 +112,7 @@ define('MY_ACF_URL', get_stylesheet_directory_uri() . '/core/acf/');
 
 // Include the ACF plugin.
 include_once(MY_ACF_PATH . 'acf.php');
-include_once(get_stylesheet_directory() . '/core/' . 'acf-default-fields.php');
+// include_once(get_stylesheet_directory() . '/core/' . 'acf-default-fields.php');
 
 // Customize the url setting to fix incorrect asset URLs.
 add_filter('acf/settings/url', 'my_acf_settings_url');
@@ -107,11 +124,11 @@ function my_acf_settings_url($url)
 /**
  * Register Custom Navigation Walker
  */
-function register_navwalker()
-{
-    require_once get_template_directory() . '/core/class-wp-bootstrap-navwalker.php';
-}
-add_action('after_setup_theme', 'register_navwalker');
+// function register_navwalker()
+// {
+//     require_once get_template_directory() . '/core/class-wp-bootstrap-navwalker.php';
+// }
+// add_action('after_setup_theme', 'register_navwalker');
 
 
 function so17687619_jquery_add_inline()
@@ -120,34 +137,15 @@ function so17687619_jquery_add_inline()
 }
 add_action('wp_enqueue_scripts', 'so17687619_jquery_add_inline');
 
-if (function_exists('acf_add_options_page')) {
+if (ATHEME_DISABLE_GUTENBERG) {
+    // disable for posts
+    add_filter('use_block_editor_for_post', '__return_false', 10);
+    add_filter('gutenberg_use_widgets_block_editor', '__return_false', 100);
 
-    acf_add_options_page(
-        array(
-            'page_title' => 'Tema Ayarları',
-            'menu_title' => 'Tema Ayarları',
-            'menu_slug' => 'theme-general-settings',
-            'capability' => 'edit_posts',
-            'redirect' => false
-        )
-    );
-
-    acf_add_options_sub_page(
-        array(
-            'page_title' => 'Alt Kısım Ayarları',
-            'menu_title' => 'Alt Kısım Ayarları',
-            'parent_slug' => 'theme-general-settings',
-        )
-    );
+    // disable for post types
+    add_filter('use_block_editor_for_post_type', '__return_false', 10);
 }
 
-// disable for posts
-add_filter('use_block_editor_for_post', '__return_false', 10);
-add_filter('gutenberg_use_widgets_block_editor', '__return_false', 100);
-
-
-// disable for post types
-add_filter('use_block_editor_for_post_type', '__return_false', 10);
 
 function create_header_menu()
 {
@@ -217,13 +215,13 @@ function send_smtp_email($phpmailer)
 
 add_filter('wpcf7_autop_or_not', '__return_false');
 
-function maintenance_mode()
-{
-    if (isset($_GET['debug'])) {
-        if ($_GET['debug'] == 1) {
-            // code...
-        } else {
-            if (get_field('site_bakim_modu_aktif', 'option')) {
+
+if (ATHEME_MAINTENANCE) {
+    function maintenance_mode()
+    {
+        if (isset($_GET['atheme_debug'])) {
+            if ($_GET['atheme_debug'] == 1) {
+            } else {
                 if (!current_user_can('edit_themes') || !is_user_logged_in()) {
                     $template = locate_template('maintenance.php');
                     load_template($template);
@@ -232,23 +230,8 @@ function maintenance_mode()
             }
         }
     }
+
+    add_action('get_header', 'maintenance_mode');
 }
-
-add_action('get_header', 'maintenance_mode');
-
-
-function enqueue_custom_styles()
-{
-    wp_enqueue_style('main-css', get_template_directory_uri() . '/core/assets/css/main.css', array(), '', 'all');
-}
-add_action('wp_enqueue_scripts', 'enqueue_custom_styles');
-
-
-function enqueue_custom_script()
-{
-    wp_enqueue_script('main-js', get_template_directory_uri() . '/core/assets/js/main.js', array('jquery'), '', true);
-}
-
-add_action('wp_enqueue_scripts', 'enqueue_custom_script');
 
 ?>
