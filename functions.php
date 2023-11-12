@@ -1,7 +1,93 @@
 <?php
 
-require_once get_template_directory() . '/core/must-install-plugins.php';
-require_once(get_template_directory() . '/core/elementor/widgets.php');
+// Exit if accessed directly
+if (!defined('ABSPATH'))
+    exit;
+
+/**
+ * Define constants
+ *
+ * @since 1.0
+ */
+
+if (!defined('ATHEME_VERSION_NUM'))
+    define('ATHEME_VERSION_NUM', '2.0');
+
+if (!defined('ATHEME'))
+    define('ATHEME', get_template());
+
+if (!defined('ATHEME_ELEMENTOR_ENABLED'))
+    define('ATHEME_ELEMENTOR_ENABLED', true);
+
+if (!defined('ATHEME_THEME_DIR'))
+    define('ATHEME_THEME_DIR', get_template_directory());
+
+if (!defined('ATHEME_THEME_URL'))
+    define('ATHEME_THEME_URL', get_template_directory_uri());
+
+if (!defined('ATHEME_THEME_URL_POST_TYPES'))
+    define('ATHEME_THEME_URL', get_template_directory_uri() . '/core/elixir/post-types');
+
+if (!defined('ATHEME_THEME_URL_TAXONOMY'))
+    define('ATHEME_THEME_URL', get_template_directory_uri() . '/core/elixir/taxonomy');
+
+if (!defined('ATHEME_THEME_URL_JS'))
+    define('ATHEME_THEME_URL_JS', get_template_directory_uri() . '/core/assets/js');
+
+if (!defined('ATHEME_THEME_URL_CSS'))
+    define('ATHEME_THEME_URL_CSS', get_template_directory_uri() . '/core/assets/css');
+
+if (!defined('ATHEME_THEME_URL_IMG'))
+    define('ATHEME_THEME_URL_CSS', get_template_directory_uri() . '/core/assets/image');
+
+if (!defined('ATHEME_THEME_START_FUNC'))
+    define('ATHEME_THEME_START_FUNC', get_template_directory_uri() . '/core/elixir/functions.php');
+
+if (!defined('ATHEME_THEME_START_CUSTOM_FUNC'))
+    define('ATHEME_THEME_START_CUSTOM_FUNC', get_template_directory_uri() . '/core/elixir/custom_func');
+
+if (ATHEME_ELEMENTOR_ENABLED) {
+    if (!defined('ATHEME_THEME_START_ELEMENTOR'))
+        define('ATHEME_THEME_START_ELEMENTOR', get_template_directory_uri() . '/core/elementor');
+
+    if (!defined('ATHEME_THEME_START_ELEMENTOR_WIDGETS_DIR'))
+        define('ATHEME_THEME_START_ELEMENTOR_WIDGETS_DIR', get_template_directory_uri() . '/core/elementor/widgets');
+
+    require_once(ATHEME_THEME_DIR . '/core/elementor/widgets.php');
+}
+
+
+require_once(ATHEME_THEME_DIR . '/core/must-install-plugins.php');
+require_once(ATHEME_THEME_DIR . '/core/elixir/widgets.php');
+
+$post_types = glob(ATHEME_THEME_URL_POST_TYPES . '*.php');
+$taxonomy = glob(ATHEME_THEME_URL_TAXONOMY . '*.php');
+$custom_func = glob(ATHEME_THEME_START_CUSTOM_FUNC . '*.php');
+
+foreach (array_combine($post_types, $taxonomy, ) as $file) {
+    if (file_exists($file)) {
+        require_once $file;
+    }
+}
+
+function enqueue_files_from_folder() {
+
+    // Enqueue all CSS files
+    $css_files = glob(ATHEME_THEME_URL_CSS . '/*.css');
+    foreach ($css_files as $css_file) {
+        $handle = 'custom-style-' . basename($css_file, '.css');
+        wp_enqueue_style($handle, get_template_directory_uri() . '/assets/css/' . basename($css_file));
+    }
+
+    // Enqueue all JS files
+    $js_files = glob(ATHEME_THEME_URL_JS . '/*.js');
+    foreach ($js_files as $js_file) {
+        $handle = 'custom-script-' . basename($js_file, '.js');
+        wp_enqueue_script($handle, get_template_directory_uri() . '/assets/js/' . basename($js_file), array(), null, true);
+    }
+}
+
+add_action('wp_enqueue_scripts', 'enqueue_files_from_folder');
 
 // Define path and URL to the ACF plugin.
 define('MY_ACF_PATH', get_stylesheet_directory() . '/core/acf/');
@@ -72,68 +158,6 @@ function create_header_menu()
 
 add_action('init', 'create_header_menu');
 
-function hizmetlerimiz_cpt_register()
-{
-
-    $labels = array(
-        'name' => _x('Ürünlerimiz', 'Post Type General Name', 'text_domain'),
-        'singular_name' => _x('Ürünlerimiz', 'Post Type Singular Name', 'text_domain'),
-        'menu_name' => __('Ürünlerimiz', 'text_domain'),
-        'name_admin_bar' => __('Ürünlerimiz', 'text_domain'),
-        'archives' => __('Ürünlerimiz Archives', 'text_domain'),
-        'attributes' => __('Ürünlerimiz Attributes', 'text_domain'),
-        'parent_item_colon' => __('Ürünlerimiz Item:', 'text_domain'),
-        'all_items' => __('Tümü', 'text_domain'),
-        'add_new_item' => __('Ekle', 'text_domain'),
-        'add_new' => __('Ekle', 'text_domain'),
-        'new_item' => __('Yeni', 'text_domain'),
-        'edit_item' => __('Düzenle', 'text_domain'),
-        'update_item' => __('Güncelle', 'text_domain'),
-        'view_item' => __('Göster', 'text_domain'),
-        'view_items' => __('Göster', 'text_domain'),
-        'search_items' => __('Ara', 'text_domain'),
-        'not_found' => __('Not found', 'text_domain'),
-        'not_found_in_trash' => __('Not found in Trash', 'text_domain'),
-        'featured_image' => __('Uygulama görseli', 'text_domain'),
-        'set_featured_image' => __('Uygulama görseli', 'text_domain'),
-        'remove_featured_image' => __('Kaldır', 'text_domain'),
-        'use_featured_image' => __('Uygulama görseli olarak kullan', 'text_domain'),
-        'insert_into_item' => __('Insert into item', 'text_domain'),
-        'uploaded_to_this_item' => __('Uploaded to this item', 'text_domain'),
-        'items_list' => __('Items list', 'text_domain'),
-        'items_list_navigation' => __('Items list navigation', 'text_domain'),
-        'filter_items_list' => __('Filter items list', 'text_domain'),
-    );
-    $rewrite = array(
-        'slug' => 'projects',
-        'with_front' => true,
-        'pages' => true,
-        'feeds' => true,
-    );
-    $args = array(
-        'label' => __('Ürünlerimiz', 'text_domain'),
-        'description' => __('Ürünlerimiz Açıklaması', 'text_domain'),
-        'labels' => $labels,
-        'supports' => array('title', 'editor', 'thumbnail'),
-        'hierarchical' => true,
-        'public' => true,
-        'show_ui' => true,
-        'show_in_menu' => true,
-        'menu_position' => 5,
-        'show_in_admin_bar' => true,
-        'show_in_nav_menus' => true,
-        'can_export' => true,
-        'has_archive' => true,
-        'exclude_from_search' => false,
-        'publicly_queryable' => true,
-        'capability_type' => 'page',
-        'taxonomies' => array('post_tag'),
-    );
-    register_post_type('products', $args);
-
-}
-add_action('init', 'hizmetlerimiz_cpt_register', 0);
-
 add_theme_support('post-thumbnails');
 
 function wpse_setup_theme()
@@ -176,48 +200,6 @@ add_filter('get_the_archive_title', function ($title) {
     return $title;
 });
 
-
-function clean_custom_menu($theme_location)
-{
-    if ($theme_location && ($locations = get_nav_menu_locations()) && isset($locations[$theme_location])) {
-        $menu = get_term($locations[$theme_location], 'nav_menu');
-        $menu_items = wp_get_nav_menu_items($menu->term_id);
-        $menu_list .= '<ul class="nav navbar-nav mb-2 mb-lg-0">' . "\n";
-        $count = 0;
-        $submenu = false;
-        foreach ($menu_items as $menu_item) {
-            $link = $menu_item->url;
-            $title = $menu_item->title;
-            if (!$menu_item->menu_item_parent) {
-                $parent_id = $menu_item->ID;
-                $menu_list .= '<li class="nav-item">' . "\n";
-                $menu_list .= '<a href="' . $link . '" class="nav-link">' . $title . '</a>' . "\n";
-            }
-            if ($parent_id == $menu_item->menu_item_parent) {
-                if (!$submenu) {
-                    $submenu = true;
-                    $menu_list .= '<ul class="sub-menu">' . "\n";
-                }
-                $menu_list .= '<li class="nav-dropdown-item">' . "\n";
-                $menu_list .= '<a href="' . $link . '"class="nav-dropdown-link">' . $title . '</a>' . "\n";
-                $menu_list .= '</li>' . "\n";
-                if ($menu_items[$count + 1]->menu_item_parent != $parent_id && $submenu) {
-                    $menu_list .= '</ul>' . "\n";
-                    $submenu = false;
-                }
-            }
-            if ($menu_items[$count + 1]->menu_item_parent != $parent_id) {
-                $menu_list .= '</li>' . "\n";
-                $submenu = false;
-            }
-            $count++;
-        }
-        $menu_list .= '</ul>' . "\n";
-    } else {
-        $menu_list = '<!-- no menu defined in location "' . $theme_location . '" -->';
-    }
-    echo $menu_list;
-}
 
 add_action('phpmailer_init', 'send_smtp_email');
 function send_smtp_email($phpmailer)
