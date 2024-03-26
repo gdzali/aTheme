@@ -11,3 +11,4 @@ core/assets/css/.DS_Store
 .DS_Store
 core/.DS_Store
 core/assets/.DS_Store
+*.DS_Store
